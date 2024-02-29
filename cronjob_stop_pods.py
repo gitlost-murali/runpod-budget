@@ -88,11 +88,16 @@ def check_and_stop_pods(runpod_handler):
         if pod_response.status_code != 200 or 'errors' in pod_response.json():
             print(f"Failed to fetch pod {pod_id}")
             continue
+        
+        try:
 
-        pod_details = pod_response.json().get('data', {}).get('pod', {})
-        gpu_util = pod_details.get('runtime', {}).get('gpus', [{}])[0].get('gpuUtilPercent', 0)
-        cpu_percent = pod_details.get('runtime', {}).get('container', {}).get('cpuPercent', 0)
-        memory_percent = pod_details.get('runtime', {}).get('container', {}).get('memoryPercent', 0)
+            pod_details = pod_response.json().get('data', {}).get('pod', {})
+            gpu_util = pod_details.get('runtime', {}).get('gpus', [{}])[0].get('gpuUtilPercent', 0)
+            cpu_percent = pod_details.get('runtime', {}).get('container', {}).get('cpuPercent', 0)
+            memory_percent = pod_details.get('runtime', {}).get('container', {}).get('memoryPercent', 0)
+        except Exception as e:
+            print(f"Failed to fetch metrics for pod {pod_id}: {e}")
+            continue
 
         new_metric = {
             'gpu_util': gpu_util,
